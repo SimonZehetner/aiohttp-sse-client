@@ -58,7 +58,7 @@ class EventSource:
     """
     def __init__(self, url: str,
                  option: Optional[Dict[str, Any]] = None,
-                 reconnection_time: timedelta = DEFAULT_RECONNECTION_TIME,
+                 reconnection_time: Optional[timedelta] = DEFAULT_RECONNECTION_TIME,
                  max_connect_retry: int = DEFAULT_MAX_CONNECT_RETRY,
                  session: Optional[ClientSession] = None,
                  on_open=None,
@@ -73,7 +73,7 @@ class EventSource:
             specifying the HTTP method with which connection
             should be established
         :param reconnection_time: wait time before try to reconnect in case
-            connection broken
+            connection broken. If None, no reconnection is performed.
         :param session: specifies a aiohttp.ClientSession, if not, create
             a default ClientSession
         :param on_open: event handler for open event
@@ -177,6 +177,9 @@ class EventSource:
                     self._process_field(field_name, field_value)
                 else:
                     self._process_field(line, '')
+            if self._reconnection_time is None:
+                raise StopAsyncIteration
+
             self._ready_state = READY_STATE_CONNECTING
             if self._on_error:
                 self._on_error()
